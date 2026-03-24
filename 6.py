@@ -45,3 +45,11 @@ plt.title("Actual vs Predicted House Prices")
 plt.xlabel("Actual Price")
 plt.ylabel("Predicted Price")
 plt.show()
+
+# VISUALIZATION
+# plt.figure(figsize=(6,6))
+# plt.scatter(y_test, y_pred)
+# plt.xlabel("Actual Prices")
+# plt.ylabel("Predicted Prices")
+# plt.title("Actual vs Predicted House Prices")
+# plt.show()
