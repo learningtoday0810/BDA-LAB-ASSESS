@@ -1,37 +1,41 @@
 import pandas as pd
-from mlxtend.frequent_patterns import apriori, association_rules
 from mlxtend.preprocessing import TransactionEncoder
-df = pd.read_csv("basket.csv")
+from mlxtend.frequent_patterns import apriori, association_rules
 
-print("Dataset Head:")
+# 1. LOAD DATASET
+df = pd.read_csv("C:/Users/rajes/OneDrive/Desktop/Sem_Eight/BDA_LAB/basket.csv")
+print("Initial Data Preview:")
 print(df.head())
 
-# Convert each row into transaction list (remove NaN values)
-transactions = df.values.tolist()
-transactions = [[str(item).strip() for item in row if pd.notna(item)] 
-                for row in transactions]
+# 2. DATA PREPROCESSING (Convert rows to transaction lists)
+# We drop NaN values so that 'nan' isn't treated as a grocery item
+transactions = df.apply(lambda row: row.dropna().tolist(), axis=1).tolist()
 
-# Apply One-Hot Encoding
-encoder = TransactionEncoder()
-onehot = encoder.fit(transactions).transform(transactions)
-basket = pd.DataFrame(onehot, columns=encoder.columns_)
+# 3. TRANSACTION ENCODING (One-Hot Encoding)
+te = TransactionEncoder()
+te_array = te.fit(transactions).transform(transactions)
+df_encoded = pd.DataFrame(te_array, columns=te.columns_).astype(bool)
+print(df_encoded.head())
 
-print("\nOne-Hot Encoded Data Shape:", basket.shape)
+# 5. APPLY APRIORI ALGORITHM
+# min_support defines the threshold for "frequent" items
+frequent_itemsets = apriori(df_encoded, min_support=0.005, use_colnames=True)
+frequent_itemsets['support'] = frequent_itemsets['support'].round(2)
 
-frequent_itemsets = apriori(basket,
-                            min_support=0.01,
-                            use_colnames=True)
+print("\nFrequent Itemsets (Top 5):")
+print(frequent_itemsets.head())
 
-print("\nFrequent Itemsets Found:", frequent_itemsets.shape[0])
+# 6. GENERATE ASSOCIATION RULES
+# metric="confidence" ensures we find strong relationships
+rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=0.1)
 
-rules = association_rules(frequent_itemsets,
-                          metric="confidence",
-                          min_threshold=0.1)
+# Round numerical values for clean display
+rules = rules.round(2)
 
-rules_sorted = rules.sort_values(by="confidence", ascending=False)
-
-top10 = rules_sorted.head(10)
+# 7. SORT AND DISPLAY TOP RULES
+# Sorting by confidence shows the most reliable rules first
+rules_sorted = rules.sort_values(by='confidence', ascending=False)
 
 print("\nTop 10 Association Rules:")
-print(top10[["antecedents", "consequents",
-             "support", "confidence", "lift"]])
+# Displaying only the most important columns for clarity
+print(rules_sorted[['antecedents', 'consequents', 'support', 'confidence', 'lift']].head(10))
