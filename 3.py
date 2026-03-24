@@ -11,7 +11,7 @@ df = pd.read_csv("countries.csv")
 print("\n Raw Data:")
 print(df.head())
 
-numeric_df = df.select_dtypes(include=['numbers'])
+numeric_df = df.select_dtypes(include=['int64', 'float64'])
 
 print("\n Selected Numerical Features:")
 print(numeric_df.columns)
